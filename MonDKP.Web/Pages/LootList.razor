@@ -1,0 +1,45 @@
+﻿@page "/LootList"
+
+@using MonDKP.Web.Data
+@using MonDKP.Entities
+@inject MonDkpDatabaseService DkpService
+
+<h1>Loot List</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (lootEntries == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Item</th>
+                <th>DKP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var lootEntry in lootEntries)
+            {
+                <tr>
+                    <td>@lootEntry.Player</td>
+                    <td><a href="https://classic.wowhead.com/item=@lootEntry.ItemNumber">@lootEntry.ItemName</a></td>
+                    <td>@lootEntry.Cost</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<LootEntry> lootEntries;
+
+    protected override async Task OnInitializedAsync()
+    {
+        lootEntries = await DkpService.GetLootListAsync();
+    }
+}

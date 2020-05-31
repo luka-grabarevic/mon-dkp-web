@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>dadc8bcc-1c02-40c8-bffb-c20ff6f9bffa</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\MonolithDKP.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MonolithDKP.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MonDKP.Entities\MonDKP.Entities.csproj" />
+    <ProjectReference Include="..\MonDKP.Lib\MonDKP.Lib.csproj" />
+  </ItemGroup>
+
+</Project>
