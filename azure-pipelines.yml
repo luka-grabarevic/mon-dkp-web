@@ -27,3 +27,13 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(tag)
+
+- stage: Publish
+  jobs:
+    - job: Publish
+      steps:
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'container'
+          publishLocation: 'Container'
