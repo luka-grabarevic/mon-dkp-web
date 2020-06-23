@@ -14,16 +14,17 @@
 }
 else
 {
+    
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Name <input @bind-value="SearchPlayer" @bind-value:event="oninput" /></th>
                 <th>Class</th>
                 <th>DKP</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var dkpEntry in dkpEntries)
+            @foreach (var dkpEntry in FilteredDkpEntries)
             {
                 <tr>
                     <td>@dkpEntry.Player</td>
@@ -35,8 +36,11 @@ else
     </table>
 }
 
-@code {
+@code 
+{
     private List<DkpEntry> dkpEntries;
+    private String SearchPlayer { get; set; } = "";
+    private List<DkpEntry> FilteredDkpEntries => dkpEntries.Where(i => i.Player.ToLower().StartsWith(SearchPlayer.ToLower())).ToList();
 
     protected override async Task OnInitializedAsync()
     {
