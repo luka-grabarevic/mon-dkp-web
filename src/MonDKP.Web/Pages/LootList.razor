@@ -17,13 +17,13 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Item</th>
+                <th>Name <input @bind-value="SearchPlayer" @bind-value:event="oninput" /></th>
+                <th>Item <input @bind-value="SearchItem" @bind-value:event="oninput" /></th>
                 <th>DKP</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var lootEntry in lootEntries)
+            @foreach (var lootEntry in FilteredLootEntries)
             {
                 <tr>
                     <td>@lootEntry.Player</td>
@@ -35,8 +35,12 @@ else
     </table>
 }
 
-@code {
-    private IEnumerable<LootEntry> lootEntries;
+@code 
+{
+    private String SearchPlayer { get; set; } = "";
+    private String SearchItem { get; set; } = "";
+    private List<LootEntry> lootEntries;
+    private List<LootEntry> FilteredLootEntries => lootEntries.Where(i => i.Player.ToLower().StartsWith(SearchPlayer.ToLower()) && i.ItemName.ToLower().Contains(SearchItem.ToLower())).ToList();
 
     protected override async Task OnInitializedAsync()
     {
