@@ -2,48 +2,44 @@
 
 @using MonDKP.Web.Data
 @using MonDKP.Entities
+@using Microsoft.Extensions.Primitives
+@using GridShared.Sorting
 @inject MonDkpDatabaseService DkpService
 
 <h1>DKP List</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
-
-@if (dkpEntries == null)
+@if (task.IsCompleted)
 {
-    <p><em>Loading...</em></p>
+    <GridComponent T="DkpEntry" Grid="@dkpGrid"></GridComponent>
 }
 else
 {
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name <input @bind-value="SearchPlayer" @bind-value:event="oninput" /></th>
-                <th>Class</th>
-                <th>DKP</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var dkpEntry in FilteredDkpEntries)
-            {
-                <tr>
-                    <td>@dkpEntry.Player</td>
-                    <td>@dkpEntry.Class</td>
-                    <td>@dkpEntry.Dkp</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p><em>Loading...</em></p>
 }
 
-@code 
+@code
 {
-    private List<DkpEntry> dkpEntries;
-    private String SearchPlayer { get; set; } = "";
-    private List<DkpEntry> FilteredDkpEntries => dkpEntries.Where(i => i.Player.ToLower().StartsWith(SearchPlayer.ToLower())).ToList();
+    private CGrid<DkpEntry> dkpGrid;
+    private Task task;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        dkpEntries = await DkpService.GetDkpListAsync();
+        Action<IGridColumnCollection<DkpEntry>> columns = c =>
+        {
+            c.Add(o => o.Player).Sortable(true);
+            c.Add(o => o.Class).Sortable(false);
+            c.Add(o => o.Dkp).Sortable(true).SortInitialDirection(GridSortDirection.Descending);
+        };
+
+        var query = new QueryDictionary<StringValues>();
+        var client = new GridClient<DkpEntry>(q => DkpService.GetDkpGridRowsAsync(columns, q), query, false, "dkpGrid", columns);
+        client.Filterable(true);
+        client.Searchable(true);
+        client.SetExcelExport(true);
+        dkpGrid = client.Grid;
+
+        // Set new items to grid
+        task = client.UpdateGrid();
+        await task;
     }
 }
