@@ -39,6 +39,9 @@ namespace MonDKP.Entities
         public DateTimeOffset TimeStampOffset => DateTimeOffset.FromUnixTimeSeconds(TimeStamp);
 
         [XmlIgnore]
+        public DateTimeOffset UtcDateTime => TimeStampOffset.UtcDateTime;
+
+        [XmlIgnore]
         public String ItemId { get; set; }
 
         [XmlIgnore]

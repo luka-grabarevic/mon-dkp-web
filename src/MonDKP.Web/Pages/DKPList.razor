@@ -26,15 +26,15 @@ else
     {
         Action<IGridColumnCollection<DkpEntry>> columns = c =>
         {
-            c.Add(o => o.Player).Sortable(true);
+            c.Add(o => o.Player).Sortable(false);
             c.Add(o => o.Class).Sortable(false);
-            c.Add(o => o.Dkp).Sortable(true).SortInitialDirection(GridSortDirection.Descending);
+            c.Add(o => o.Dkp).Titled("DKP").Sortable(true).SortInitialDirection(GridSortDirection.Descending);
         };
 
         var query = new QueryDictionary<StringValues>();
         var client = new GridClient<DkpEntry>(q => DkpService.GetDkpGridRowsAsync(columns, q), query, false, "dkpGrid", columns);
         client.Filterable(true);
-        client.Searchable(true);
+        client.Searchable(true, true, false);
         client.SetExcelExport(true);
         dkpGrid = client.Grid;
 

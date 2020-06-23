@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using GridMvc.Server;
@@ -28,20 +27,28 @@ namespace MonDKP.Web.Data
                                                   "dkpGrid",
                                                   columns)
                          .Sortable(true)
-                         .Searchable(true, true)
+                         .Searchable(true, true, false)
                          .Filterable(true);
 
             // return items to displays
             return server.ItemsToDisplay;
         }
 
-        public async Task<List<LootEntry>> GetLootListAsync()
+        public async Task<ItemsDTO<LootEntry>> GetLootGridRowsAsync(Action<IGridColumnCollection<LootEntry>> columns,
+                                                                    QueryDictionary<StringValues> query)
         {
             var dataBase = await GetMonDkpDatabaseAsync();
+            var server = new GridServer<LootEntry>(dataBase.LootHistory.LootEntries,
+                                                   new QueryCollection(query),
+                                                   true,
+                                                   "lootGrid",
+                                                   columns)
+                         .Sortable(true)
+                         .Searchable(true, true, false)
+                         .Filterable(true);
 
-            //await UpdateItemQuality(dataBase.LootHistory.LootEntries);
-
-            return dataBase.LootHistory.LootEntries;
+            // return items to displays
+            return server.ItemsToDisplay;
         }
 
         private async Task<MonDkpDatabase> GetMonDkpDatabaseAsync()

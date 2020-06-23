@@ -2,48 +2,60 @@
 
 @using MonDKP.Web.Data
 @using MonDKP.Entities
+@using GridShared.Sorting
+@using Microsoft.Extensions.Primitives
 @inject MonDkpDatabaseService DkpService
 
 <h1>Loot List</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
-
-@if (lootEntries == null)
+@if (task.IsCompleted)
 {
-    <p><em>Loading...</em></p>
+    <GridComponent T="LootEntry" Grid="@lootGrid"></GridComponent>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name <input @bind-value="SearchPlayer" @bind-value:event="oninput" /></th>
-                <th>Item <input @bind-value="SearchItem" @bind-value:event="oninput" /></th>
-                <th>DKP</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var lootEntry in FilteredLootEntries)
-            {
-                <tr>
-                    <td>@lootEntry.Player</td>
-                    <td><a href="https://classic.wowhead.com/item=@lootEntry.ItemNumber">@lootEntry.ItemName</a></td>
-                    <td>@lootEntry.Cost</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p><em>Loading...</em></p>
 }
 
-@code 
+@code
 {
-    private String SearchPlayer { get; set; } = "";
-    private String SearchItem { get; set; } = "";
-    private List<LootEntry> lootEntries;
-    private List<LootEntry> FilteredLootEntries => lootEntries.Where(i => i.Player.ToLower().StartsWith(SearchPlayer.ToLower()) && i.ItemName.ToLower().Contains(SearchItem.ToLower())).ToList();
+    private CGrid<LootEntry> lootGrid;
+    private Task task;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        lootEntries = await DkpService.GetLootListAsync();
+        Action<IGridColumnCollection<LootEntry>> columns = c =>
+        {
+            c.Add(o => o.Player)
+             .Sortable(false);
+
+            c.Add(o => o.ItemName)
+             .Titled("Item")
+             .Encoded(false)
+             .Sanitized(false)
+             .RenderValueAs(o => $"<a class='modal_link' href=\"https://classic.wowhead.com/item={o.ItemNumber}\">{o.ItemName}</a>");
+
+            c.Add(o => o.Cost)
+             .Sortable(true)
+             .Titled("DKP");
+
+            c.Add(o => o.UtcDateTime)
+             .Titled("Date")
+             .Sortable(true)
+             .RenderValueAs(o => o.UtcDateTime.ToLocalTime().DateTime.ToShortDateString())
+             .SortInitialDirection(GridSortDirection.Descending);
+        };
+
+        var query = new QueryDictionary<StringValues>();
+        var client = new GridClient<LootEntry>(q => DkpService.GetLootGridRowsAsync(columns, q), query, false, "lootGrid", columns);
+        client.Filterable(true);
+        client.Searchable(true);
+        client.Searchable(true, true, false);
+        client.SetExcelExport(true);
+        lootGrid = client.Grid;
+
+        // Set new items to grid
+        task = client.UpdateGrid();
+        await task;
     }
 }
