@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using MonDKP.Entities;
 using MonDKP.Lib;
@@ -7,9 +9,21 @@ namespace MonDKP.Web.Data
 {
     public class MonDkpDatabaseService
     {
+        private DateTime lastWriteTimeUtc = DateTime.MinValue;
+        private MonDkpDatabase cachedData;
+        private const String DatabaseFileName = "MonolithDKP.lua";
+
         public async Task<MonDkpDatabase> GetMonDkpDatabaseAsync()
         {
-            return await MonDkpFileLoader.LoadMonDkpDatabaseAsync("MonolithDKP.lua");
+            var writeTimeUtc = File.GetLastWriteTimeUtc(DatabaseFileName);
+            if (writeTimeUtc > lastWriteTimeUtc)
+            {
+                var data = await MonDkpFileLoader.LoadMonDkpDatabaseAsync(DatabaseFileName);
+                this.cachedData = data;
+                this.lastWriteTimeUtc = writeTimeUtc;
+            }
+
+            return this.cachedData;
         }
 
         public async Task<List<DkpEntry>> GetDkpListAsync()
